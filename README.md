@@ -3,10 +3,10 @@
 This is an unofficial mod which uses `ryzen_smu` to get the CPU power and has a nicer GPU summary. It currently only works on AMD systems. Nvidia GPU not tested.  
 
 You are required to:
-- Install and enable the `ryzen_smu-dkms` kernel module
-- Install and enable the [systemd service](systemd-unit/ryzen_smu-pmtable-perms.service)
 - Create the group `ryzen_smu`
 - Add yourself to the `ryzen_smu` group
+- Install and enable the `ryzen_smu-dkms` kernel module
+- Install and enable the [systemd service](systemd-unit/ryzen_smu-pmtable-perms.service)
 
 if you do not want to run btop with sudo.
 
