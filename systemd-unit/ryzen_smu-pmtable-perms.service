@@ -1,0 +1,10 @@
+[Unit]
+Description=Set permissions for Ryzen SMU pm_table
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'chgrp ryzen_smu /sys/kernel/ryzen_smu_drv/pm_table && chmod g+r /sys/kernel/ryzen_smu_drv/pm_table'
+
+[Install]
+WantedBy=multi-user.target

@@ -17,6 +17,7 @@ endif
 
 OLDCXX := $(CXXFLAGS)
 OLDLD := $(LDFLAGS)
+CXX = clang++
 
 PREFIX ?= /usr/local
 
@@ -167,12 +168,7 @@ ifeq ($(THREADS),1)
 	override THREADS := auto
 endif
 
-#? LTO command line
-ifeq ($(CLANG_WORKS),true)
-	LTO := thin
-else
-	LTO := $(THREADS)
-endif
+LTO := thin
 
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2> /dev/null || true)
 CONFIGURE_COMMAND := $(MAKE) STATIC=$(STATIC) FORTIFY_SOURCE=$(FORTIFY_SOURCE)
@@ -195,7 +191,7 @@ override GOODFLAGS := $(foreach flag,$(TESTFLAGS),$(strip $(shell echo "int main
 #? Flags, Libraries and Includes
 override REQFLAGS   := -std=c++20
 WARNFLAGS			:= -Wall -Wextra -pedantic
-OPTFLAGS			:= -O2 -ftree-vectorize -flto=$(LTO)
+OPTFLAGS			:= -Ofast -ftree-vectorize -flto=$(LTO) -s
 LDCXXFLAGS			:= -pthread -DFMT_HEADER_ONLY -D_GLIBCXX_ASSERTIONS -D_FILE_OFFSET_BITS=64 $(GOODFLAGS) $(ADDFLAGS)
 override CXXFLAGS	+= $(REQFLAGS) $(LDCXXFLAGS) $(OPTFLAGS) $(WARNFLAGS)
 override LDFLAGS	+= $(LDCXXFLAGS) $(OPTFLAGS) $(WARNFLAGS)

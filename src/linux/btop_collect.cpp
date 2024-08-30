@@ -34,6 +34,12 @@ tab-size = 4
 #include <dlfcn.h>
 #include <unordered_map>
 #include <utility>
+#include "libsmu.hpp"
+#include "readinfo.hpp"
+#include "pm_tables.hpp"
+
+#define pmta(elem) ((pmt->elem)?(*pmt->elem):NAN)
+#define pmta0(elem) ((pmt->elem)?(*pmt->elem):0)
 
 #if defined(RSMI_STATIC)
 	#include <rocm_smi/rocm_smi.h>
@@ -61,6 +67,35 @@ using std::future;
 using std::async;
 using std::pair;
 
+int select_pm_table_version(unsigned int version, pm_table *pmt, unsigned char *pm_buf) {
+    //Initialize pmt to 0. This also sets all pointers to 0, which signifies non-existiting fields.
+    //Access via pmta(...) will check if pointer is 0 before trying to access the value.
+    memset(pmt, 0, sizeof(pm_table));
+
+     //Select matching PM Table
+    switch(version) {
+        case 0x380904: pm_table_0x380904(pmt, pm_buf); break; //Ryzen 5600X
+        case 0x380905: pm_table_0x380905(pmt, pm_buf); break; //Ryzen 5600X
+        case 0x380804: pm_table_0x380804(pmt, pm_buf); break; //Ryzen 5900X / 5950X
+        case 0x380805: pm_table_0x380805(pmt, pm_buf); break; //Ryzen 5900X / 5950X
+        case 0x400005: pm_table_0x400005(pmt, pm_buf); break; //Ryzen 5700G
+        case 0x240903: pm_table_0x240903(pmt, pm_buf); break; //Ryzen 3700X / 3800X
+        case 0x240803: pm_table_0x240803(pmt, pm_buf); break; //Ryzen 3950X
+        default:
+            return 0;
+    }
+
+    //Avoid access bejond bounds of the defined arrays.
+    if (pmt->max_l3 > PMT_MAX_NUM_L3) pmt->max_l3 = PMT_MAX_NUM_L3;
+    if (pmt->max_cores > PMT_MAX_NUM_CORES) pmt->max_cores = PMT_MAX_NUM_CORES;
+
+    //APML_POWER is probably identical to PACKAGE_POWER
+    if (pmt->PACKAGE_POWER == NULL) pmt->PACKAGE_POWER = pmt->APML_POWER;
+
+    if (pmt->VDD18_POWER == NULL) pmt->VDD18_POWER = pmt->IO_VDD18_POWER;
+
+    return 1;
+}
 
 namespace fs = std::filesystem;
 namespace rng = std::ranges;
@@ -306,6 +341,17 @@ namespace Cpu {
 	bool has_battery = true;
 	tuple<int, float, long, string> current_bat;
 
+	float PPT_MAX;
+	float PPT;
+	pm_table _pmt;
+	pm_table *pmt = &_pmt;
+	char *dumpfile= "/sys/kernel/ryzen_smu_drv/pm_table";
+	uint32_t bytes_read;
+	uint8_t readbuf[1024];
+	unsigned int version = 0x380804;
+	FILE *fd;
+
+
 	const array time_names {
 		"user"s, "nice"s, "system"s, "idle"s, "iowait"s,
 		"irq"s, "softirq"s, "steal"s, "guest"s, "guest_nice"s
@@ -425,6 +471,7 @@ namespace Cpu {
 					}
 				}
 			}
+
 			if (not got_coretemp and fs::exists(fs::path("/sys/devices/platform/coretemp.0/hwmon"))) {
 				for (auto& d : fs::directory_iterator(fs::path("/sys/devices/platform/coretemp.0/hwmon"))) {
 					fs::path add_path = fs::canonical(d.path());
@@ -559,6 +606,24 @@ namespace Cpu {
 
 		string cpuhz;
 		try {
+
+			//? Get PPT Limit and PPT Value
+			fd = fopen(dumpfile, "rb");
+			if (!fd) {
+				fprintf(stderr, "Could not open %s\n", dumpfile);
+				exit(0);
+			}
+			bytes_read = fread(readbuf, sizeof(char), sizeof(readbuf), fd);
+			fclose(fd)	;
+
+			if (!select_pm_table_version(version, &_pmt, readbuf)) {
+				fprintf(stderr, "Could not read %s\n", dumpfile);
+				exit(0);
+			}
+
+			PPT_MAX = pmta(PPT_LIMIT);
+			PPT = pmta(PPT_VALUE);
+
 			double hz{};
 			//? Try to get freq from /sys/devices/system/cpu/cpufreq/policy first (faster)
 			if (not freq_path.empty()) {

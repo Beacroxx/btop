@@ -194,6 +194,7 @@ namespace Cpu {
 	extern int x, y, width, height, min_width, min_height;
 	extern bool shown, redraw, got_sensors, cpu_temp_only, has_battery;
 	extern string cpuName, cpuHz;
+	extern float PPT, PPT_MAX;
 	extern vector<string> available_fields;
 	extern vector<string> available_sensors;
 	extern tuple<int, float, long, string> current_bat;
