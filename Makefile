@@ -114,9 +114,7 @@ $(error $(shell printf "\033[1;91mERROR: \033[97m$(CXX) can't statically link gl
 	endif
 endif
 
-ifeq ($(STRIP),true)
-	override ADDFLAGS += -s
-endif
+override ADDFLAGS += -s
 
 ifeq ($(VERBOSE),true)
 	override VERBOSE := false
@@ -192,7 +190,7 @@ override GOODFLAGS := $(foreach flag,$(TESTFLAGS),$(strip $(shell echo "int main
 #? Flags, Libraries and Includes
 override REQFLAGS   := -std=c++20
 WARNFLAGS			:= -Wall -Wextra -pedantic
-OPTFLAGS			:= -Ofast -ftree-vectorize -flto=$(LTO) -s
+OPTFLAGS			:= -Ofast -ftree-vectorize -flto=$(LTO)
 LDCXXFLAGS			:= -pthread -DFMT_HEADER_ONLY -D_GLIBCXX_ASSERTIONS -D_FILE_OFFSET_BITS=64 $(GOODFLAGS) $(ADDFLAGS)
 override CXXFLAGS	+= $(REQFLAGS) $(LDCXXFLAGS) $(OPTFLAGS) $(WARNFLAGS)
 override LDFLAGS	+= $(LDCXXFLAGS) $(OPTFLAGS) $(WARNFLAGS)
