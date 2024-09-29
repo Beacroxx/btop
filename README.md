@@ -1,6 +1,6 @@
 
 # NOTE
-This is an unofficial mod which uses `ryzen_smu` to get the CPU power and has a nicer GPU summary. It currently only works on AMD systems. Nvidia GPU not tested.  
+This is an unofficial mod which uses `ryzen_smu` to get the CPU power and has a nicer GPU summary. It currently only works on AMD systems.
 
 You are required to:
 - Create the group `ryzen_smu`
