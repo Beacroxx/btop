@@ -2527,7 +2527,6 @@ void calcSizes() {
 
     auto &custom = Config::getS("custom_cpu_name");
     static const bool hasCpuHz = not Cpu::get_cpuHz().empty();
-    get_power();
     const string cpu_title = uresize(
         (custom.empty() ? Cpu::cpuName : custom),
         b_width - (Config::getB("show_cpu_freq") and hasCpuHz ? 14 : 4));

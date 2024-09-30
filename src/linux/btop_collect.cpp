@@ -992,6 +992,8 @@ namespace Cpu {
 		if (Runner::stopping or (no_update and not current_cpu.cpu_percent.at("total").empty())) return current_cpu;
 		auto& cpu = current_cpu;
 
+    get_power();
+
 		if (Config::getB("show_cpu_freq"))
 			cpuHz = get_cpuHz();
 
