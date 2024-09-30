@@ -10,6 +10,8 @@ You are required to:
 
 if you do not want to run btop with sudo on AMD systems.
 
+On intel, you can run `sudo make setcap` after `sudo make install` if you dont want to run btop as root.
+
 Use at your own risk.
 #
 
