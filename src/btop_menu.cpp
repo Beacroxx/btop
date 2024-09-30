@@ -1203,7 +1203,7 @@ namespace Menu {
 		#ifdef GPU_SUPPORT
 			{"show_gpu_info", std::cref(Config::show_gpu_values)},
 			{"graph_symbol_gpu", std::cref(Config::valid_graph_symbols_def)},
-			{"summary_gpu", std::cref(Gpu::gpu_names)},
+			{"summary_gpu", std::cref(Gpu::summary_names)},
 		#endif
 		};
 		auto tty_mode = Config::getB("tty_mode");

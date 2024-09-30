@@ -30,6 +30,7 @@ using namespace Tools;
 #ifdef GPU_SUPPORT
 namespace Gpu {
 	vector<string> gpu_names;
+	vector<string> summary_names;
 	vector<int> gpu_b_height_offsets;
 	std::unordered_map<string, deque<long long>> shared_gpu_percent = {
 		{"gpu-average", {}},

@@ -892,7 +892,7 @@ namespace Cpu {
 		//? Gpu brief info
 		if (show_gpu) {
         for (ssize_t i = 0; i < (ssize_t)gpus.size(); i++) {
-          if (Config::getS("summary_gpu") == Gpu::gpu_names[i]) {
+          if (Config::getS("summary_gpu") == Gpu::summary_names[i]) {
             if (gpu_always or not v_contains(Gpu::shown_panels, i)) {
               out += Mv::to(b_y + b_height - 3 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR ";
               if (show_temps and gpus[i].supported_functions.temp_info and b_width < 34) {

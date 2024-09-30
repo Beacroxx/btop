@@ -345,8 +345,10 @@ namespace Shared {
 			for (auto const& [key, _] : Gpu::shared_gpu_percent)
 				Cpu::available_fields.push_back(key);
 
-		Gpu::gpu_names.erase(std::remove_if(Gpu::gpu_names.begin(), Gpu::gpu_names.end(), [](const string& s) { return s.empty(); }), Gpu::gpu_names.end());
-		Gpu::gpu_names.push_back("Off");
+		for (size_t i = 0; i < Gpu::gpus.size(); ++i) {
+			Gpu::summary_names.push_back("gpu" + std::to_string(i));
+		}
+		Gpu::summary_names.push_back("Off");
 
 			using namespace Gpu;
 			count = gpus.size();
