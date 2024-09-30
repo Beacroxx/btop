@@ -928,7 +928,8 @@ namespace Cpu {
               }
 
               out += Mv::to(b_y + b_height - 1 - (has_smu || has_msr ? 0 : 0), b_x + 2);
-              auto custom = Config::getS("custom_gpu_name0");
+              string custom = Config::getS(std::string("custom_gpu_name") +
+                                 (char)(i + '0'));
               string name = custom.empty() ? Gpu::gpu_names[i] : custom;
               out += Theme::c("div_line") + Symbols::title_left_down + Theme::c("main_fg") + Fx::b + name + Theme::c("div_line") + Symbols::title_right_down;
               int mhz = gpus[i].gpu_clock_speed;
