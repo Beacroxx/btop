@@ -1,6 +1,6 @@
 
 # NOTE
-This is an unofficial mod which uses `ryzen_smu` for AMD/Intel RAPL for Intel to get the CPU power and has a nicer GPU summary.
+This is an unofficial mod which uses `ryzen_smu`/Intel RAPL to get the CPU power and has a nicer GPU summary.
 
 You are required to:
 - Create the group `ryzen_smu`
