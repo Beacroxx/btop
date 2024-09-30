@@ -894,13 +894,13 @@ namespace Cpu {
         for (ssize_t i = 0; i < (ssize_t)gpus.size(); i++) {
           if (Config::getS("summary_gpu") == Gpu::summary_names[i]) {
             if (gpu_always or not v_contains(Gpu::shown_panels, i)) {
-              out += Mv::to(b_y + b_height - 3 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR ";
               if (show_temps and gpus[i].supported_functions.temp_info and b_width < 34) {
                 const auto [temp, unit] = celsius_to(gpus[i].temp.back(), temp_scale);
                 if (temp < 100) out += " ";
               }
               if (gpus[i].supported_functions.pwr_usage) {
                 Gpu::summary_has_power = true;
+                out += Mv::to(b_y + b_height - 3 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR ";
                 Draw::Meter pwr_meter = Draw::Meter{b_width - (show_temps ? 23 - 12 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cached"};
                 out += pwr_meter(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll))
                   + Theme::g("cached").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll)) +
