@@ -563,6 +563,10 @@ namespace Menu {
 				"Custom gpu5 model name in gpu stats box.",
 				"",
 				"Empty string to disable."},
+			{"summary_gpu",
+				"Which gpu to show in summary mode.",
+				""
+				},
 		},
 	#endif
 		{
@@ -1199,6 +1203,7 @@ namespace Menu {
 		#ifdef GPU_SUPPORT
 			{"show_gpu_info", std::cref(Config::show_gpu_values)},
 			{"graph_symbol_gpu", std::cref(Config::valid_graph_symbols_def)},
+			{"summary_gpu", std::cref(Gpu::gpu_names)},
 		#endif
 		};
 		auto tty_mode = Config::getB("tty_mode");
@@ -1385,7 +1390,7 @@ namespace Menu {
 					Logger::set(optList.at(i));
 					Logger::info("Logger set to " + optList.at(i));
 				}
-				else if (is_in(option, "proc_sorting", "cpu_sensor", "show_gpu_info") or option.starts_with("graph_symbol") or option.starts_with("cpu_graph_"))
+				else if (is_in(option, "proc_sorting", "cpu_sensor", "show_gpu_info", "summary_gpu") or option.starts_with("graph_symbol") or option.starts_with("cpu_graph_"))
 					screen_redraw = true;
 			}
 			else

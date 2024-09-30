@@ -632,7 +632,6 @@ namespace Cpu {
 	uint64_t read_msr(off_t offset) {
         uint64_t value;
 		if (pread(fd_msr, &value, sizeof value, offset) != sizeof value) {
-			perror("pread");
 			exit(1);
 		}
 		return (double)value;
@@ -642,13 +641,13 @@ namespace Cpu {
 		//? Get PPT Limit and PPT Value from smu
 			if (has_smu) {
 				if(pread(fd_smu, readbuf, sizeof(readbuf), 0) < 0) {
-					perror("pread");
-					exit(1);
-				};
+					fprintf(stderr, "Could not read /sys/kernel/ryzen_smu_drv/pm_table\n");
+					return false;
+				}
 
 				if (!select_pm_table_version(version, &_pmt, readbuf)) {
 					fprintf(stderr, "Could not read /sys/kernel/ryzen_smu_drv/pm_table\n");
-					exit(0);
+					return false;
 				}
 
 				PPT_MAX = pmta(PPT_LIMIT);
