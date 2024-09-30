@@ -899,16 +899,20 @@ namespace Cpu {
                 const auto [temp, unit] = celsius_to(gpus[i].temp.back(), temp_scale);
                 if (temp < 100) out += " ";
               }
+              if (gpus[i].supported_functions.pwr_usage) {
+                Gpu::summary_has_power = true;
+                Draw::Meter pwr_meter = Draw::Meter{b_width - (show_temps ? 23 - 12 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cached"};
+                out += pwr_meter(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll))
+                  + Theme::g("cached").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll)) +
+                  fmt::format("{:>4.0f}", gpus[i].pwr_usage / 1000.0) +
+                  Theme::c("main_fg") + 'W';
+              } else 
+                Gpu::summary_has_power = false;
               if (gpus[i].supported_functions.gpu_utilization) {
-              Draw::Meter pwr_meter = Draw::Meter{b_width - (show_temps ? 23 - 12 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cached"};
-              Draw::Meter gpu_meter = Draw::Meter{b_width - (show_temps ? 23 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cpu" };
-              out += pwr_meter(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll))
-                + Theme::g("cached").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll)) +
-                fmt::format("{:>4.0f}", gpus[i].pwr_usage / 1000.0) +
-                Theme::c("main_fg") + 'W';;
-              out += Mv::to(b_y + b_height - 2 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "GPU ";
-              out += gpu_meter(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back())
-                + Theme::g("cpu").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back(), 0ll, 100ll)) + rjust(to_string(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back()), 4) + Theme::c("main_fg") + '%';
+                Draw::Meter gpu_meter = Draw::Meter{b_width - (show_temps ? 23 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cpu" };
+                out += Mv::to(b_y + b_height - 2 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "GPU ";
+                out += gpu_meter(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back())
+                  + Theme::g("cpu").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back(), 0ll, 100ll)) + rjust(to_string(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back()), 4) + Theme::c("main_fg") + '%';
               } else out += Mv::r(gpu_meter_width);
 
               if (show_temps and gpus[i].supported_functions.temp_info) {
@@ -927,7 +931,7 @@ namespace Cpu {
                 out += rjust(to_string(temp), 4) + Theme::c("main_fg") + unit;
               }
 
-              out += Mv::to(b_y + b_height - 1 - (has_smu || has_msr ? 0 : 0), b_x + 2);
+              out += Mv::to(b_y + b_height - 1 - (has_smu || has_msr ? 0 : 0) - (!gpus[i].supported_functions.pwr_usage), b_x + 2);
               string custom = Config::getS(std::string("custom_gpu_name") +
                                  (char)(i + '0'));
               string name = custom.empty() ? Gpu::gpu_names[i] : custom;
@@ -2514,7 +2518,7 @@ void calcSizes() {
 #ifdef GPU_SUPPORT
     gpus_extra_height = max(0, gpus_extra_height - 1);
     b_height =
-        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 2) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0)) - (Config::getS("summary_gpu") == "Off" ? 2 : 0);
+        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 2) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0)) - (Config::getS("summary_gpu") == "Off" ? 2 : 0) - (Gpu::summary_has_power ? 0 : 1);
 #else
     b_height =
         min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 - (has_smu || has_msr ? 0 : 1));

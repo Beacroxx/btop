@@ -112,6 +112,7 @@ namespace Gpu {
 	extern vector<bool> redraw;
 	extern int shown;
 	extern int count;
+	extern bool summary_has_power;
 	extern vector<int> shown_panels;
 	extern vector<string> gpu_names;
 	extern vector<string> summary_names;
