@@ -598,7 +598,7 @@ namespace Cpu {
 					cpu_sensor = name;
 					break;
 				}
-			}
+			}  
 			if (cpu_sensor.empty()) {
 				cpu_sensor = found_sensors.begin()->first;
 				Logger::warning("No good candidate for cpu sensor found, using random from all found sensors.");
