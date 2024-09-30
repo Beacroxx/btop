@@ -345,8 +345,8 @@ namespace Shared {
 			for (auto const& [key, _] : Gpu::shared_gpu_percent)
 				Cpu::available_fields.push_back(key);
 
-		if (Gpu::gpu_names.back().empty()) Gpu::gpu_names.pop_back();
-		Gpu::gpu_names.push_back("Off"); //? Off
+		if (Gpu::gpu_names.back().empty()) Gpu::gpu_names.back() = "Off";
+		else Gpu::gpu_names.push_back("Off");
 
 			using namespace Gpu;
 			count = gpus.size();
