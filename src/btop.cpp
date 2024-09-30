@@ -323,9 +323,8 @@ void clean_quit(int sig) {
 		}
 	#else
 		if (Cpu::has_smu)
-			fclose(Cpu::fd_smu);
-
-		if (Cpu::has_msr)
+			close(Cpu::fd_smu);
+		else if (Cpu::has_msr)
 			close(Cpu::fd_msr);
 
 		struct timespec ts;
@@ -1106,15 +1105,15 @@ int main(int argc, char **argv) {
 	pthread_sigmask(SIG_BLOCK, &mask, &Input::signal_mask);
 
 	//? Open smu dump
-	Cpu::fd_smu = fopen("/sys/kernel/ryzen_smu_drv/pm_table", "rb");
-	if (Cpu::fd_smu) {
+	Cpu::fd_smu = open("/sys/kernel/ryzen_smu_drv/pm_table", O_RDONLY, (mode_t)0);
+	if (Cpu::fd_smu >= 0) {
 		Cpu::has_smu = true;
-	}
-
-	//? Open msr dump
-	Cpu::fd_msr = open("/dev/cpu/0/msr", O_RDONLY);
-	if (Cpu::fd_msr >= 0) {
-		Cpu::has_msr = true;
+	} else {
+		//? Open msr dump
+		Cpu::fd_msr = open("/dev/cpu/0/msr", O_RDONLY, (mode_t)0);
+		if (Cpu::fd_msr >= 0) {
+			Cpu::has_msr = true;
+		}
 	}
 
 	//? Start runner thread

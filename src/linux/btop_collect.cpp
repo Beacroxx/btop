@@ -374,7 +374,7 @@ namespace Cpu {
 	float PPT;
 	std::chrono::high_resolution_clock::time_point msr_prev_time;
 	uint64_t prev_uj;
-	FILE *fd_smu;
+	int fd_smu;
 	int fd_msr;
 	pm_table _pmt;
 	pm_table *pmt = &_pmt;
@@ -638,19 +638,13 @@ namespace Cpu {
 		return (double)value;
     }
 
-	string get_cpuHz() {
-
-		static int failed{};
-
-		if (failed > 4)
-			return ""s;
-
-		string cpuhz;
-		try {
-
-			//? Get PPT Limit and PPT Value from smu
+	bool get_power() {
+		//? Get PPT Limit and PPT Value from smu
 			if (has_smu) {
-				bytes_read = fread(readbuf, sizeof(char), sizeof(readbuf), fd_smu);
+				if(pread(fd_smu, readbuf, sizeof(readbuf), 0) < 0) {
+					perror("pread");
+					exit(1);
+				};
 
 				if (!select_pm_table_version(version, &_pmt, readbuf)) {
 					fprintf(stderr, "Could not read /sys/kernel/ryzen_smu_drv/pm_table\n");
@@ -659,8 +653,7 @@ namespace Cpu {
 
 				PPT_MAX = pmta(PPT_LIMIT);
 				PPT = pmta(PPT_VALUE);
-			}
-
+			} else 
 			//? Get PPT Limit and PPT Value from msr
 			if (has_msr) {
 				uint64_t power_unit_value = read_msr(MSR_RAPL_POWER_UNIT);
@@ -681,8 +674,20 @@ namespace Cpu {
 
 				msr_prev_time = time;
 				prev_uj = energy_value;
-
 			}
+
+		return true;
+	}
+
+	string get_cpuHz() {
+
+		static int failed{};
+
+		if (failed > 4)
+			return ""s;
+
+		string cpuhz;
+		try {
 
 			double hz{};
 			//? Try to get freq from /sys/devices/system/cpu/cpufreq/policy first (faster)

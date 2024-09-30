@@ -196,7 +196,7 @@ namespace Cpu {
 	extern bool shown, redraw, got_sensors, cpu_temp_only, has_battery, has_smu, has_msr;
 	extern string cpuName, cpuHz;
 	extern float PPT, PPT_MAX;
-	extern FILE *fd_smu;
+	extern int fd_smu;
 	extern int fd_msr;
 	extern vector<string> available_fields;
 	extern vector<string> available_sensors;
@@ -235,6 +235,8 @@ namespace Cpu {
 	extern std::unordered_map<int, int> core_mapping;
 
 	auto get_cpuHz() -> string;
+
+	auto get_power() -> bool;
 
 	//* Get battery info from /sys
 	auto get_battery() -> tuple<int, float, long, string>;
