@@ -2513,7 +2513,7 @@ void calcSizes() {
 #ifdef GPU_SUPPORT
     gpus_extra_height = max(0, gpus_extra_height - 1);
     b_height =
-        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 2) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0));
+        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 2) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0)) - (Config::getS("summary_gpu") == "Off" ? 2 : 0);
 #else
     b_height =
         min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 - (has_smu || has_msr ? 0 : 1));
