@@ -935,12 +935,12 @@ namespace Cpu {
               string custom = Config::getS(std::string("custom_gpu_name") +
                                  (char)(i + '0'));
               string name = custom.empty() ? Gpu::gpu_names[i] : custom;
-              out += Theme::c("div_line") + Symbols::title_left_down + Theme::c("main_fg") + Fx::b + name + Theme::c("div_line") + Symbols::title_right_down;
+              out += Theme::c("div_line") + Symbols::title_left_down + Theme::c("title") + Fx::b + name + Theme::c("div_line") + Symbols::title_right_down;
               int mhz = gpus[i].gpu_clock_speed;
               float ghz = mhz / 1000.0f;
               bool is_ghz = ghz >= 1.0f;
               string clock_speed_string = (is_ghz ? std::format("{:.1f}", ghz) : to_string(mhz)) + " " + (is_ghz ? "GHz" : "MHz");
-              out += Mv::to(b_y + b_height - 1, b_x + b_width - 7 - clock_speed_string.size()) + Theme::c("div_line") + Symbols::h_line + Symbols::h_line +  Symbols::h_line + Symbols::h_line + Symbols::title_left_down + Theme::c("main_fg") + Fx::b + clock_speed_string + Theme::c("inactive_fg") + Symbols::title_right_down;
+              out += Mv::to(b_y + b_height - 1, b_x + b_width - 7 - clock_speed_string.size()) + Theme::c("div_line") + Symbols::h_line + Symbols::h_line +  Symbols::h_line + Symbols::h_line + Symbols::title_left_down + Theme::c("title") + Fx::b + clock_speed_string + Theme::c("inactive_fg") + Symbols::title_right_down;
             }
   //				if (gpus[i].supported_functions.mem_used and gpus[i].supported_functions.mem_total and b_columns > 1) {
   //					out += ' ' + Theme::c("inactive_fg") + graph_bg * 5 + Mv::l(5) + Theme::g("used").at(safeVal(gpus[i].gpu_percent, "gpu-vram-totals"s).back())
