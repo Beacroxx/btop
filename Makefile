@@ -114,7 +114,7 @@ $(error $(shell printf "\033[1;91mERROR: \033[97m$(CXX) can't statically link gl
 	endif
 endif
 
-override ADDFLAGS += -s
+# override ADDFLAGS += -s
 
 ifeq ($(VERBOSE),true)
 	override VERBOSE := false
@@ -198,7 +198,7 @@ INC					:= $(foreach incdir,$(INCDIRS),-isystem $(incdir)) -I$(SRCDIR) -I$(BUILD
 SU_USER				:= root
 
 ifdef DEBUG
-	override OPTFLAGS := -O0 -g
+	override OPTFLAGS := -O1 -g
 endif
 
 SOURCES	:= $(sort $(shell find $(SRCDIR) -maxdepth 1 -type f -name *.$(SRCEXT)))
@@ -354,7 +354,7 @@ setuid:
 setcap:
 	@printf "\033[1;97mFile: $(DESTDIR)$(PREFIX)/bin/btop\n"
 	@printf "\033[1;92mSetting capabilities...\033[0m\n"
-	@setcap cap_perfmon=+ep $(DESTDIR)$(PREFIX)/bin/btop
+	@setcap "cap_perfmon+ep cap_sys_rawio+ep" $(DESTDIR)$(PREFIX)/bin/btop
 
 # With 'rm -v' user will see what files (if any) got removed
 uninstall:

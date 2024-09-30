@@ -26,7 +26,7 @@
 #include "libsmu.hpp"
 #include "readinfo.hpp"
 
-extern smu_obj_t obj;
+smu_obj_t obj;
 
 #define READ_SMN_V1(offs) { if (smu_read_smn_addr(&obj, offs + offset, &value1) != SMU_Return_OK) goto _READ_ERROR; }
 #define READ_SMN_V2(offs) { if (smu_read_smn_addr(&obj, offs + offset, &value2) != SMU_Return_OK) goto _READ_ERROR; }

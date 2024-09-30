@@ -34,7 +34,7 @@ typedef struct {
     unsigned int core_disable_map_pmt;
     unsigned int enabled_cores_count;
 } system_info;
-
+extern smu_obj_t obj;
 void print_memory_timings();
 void get_processor_topology(system_info *sysinfo, unsigned int zen_version);
 unsigned int count_set_bits(unsigned int v);

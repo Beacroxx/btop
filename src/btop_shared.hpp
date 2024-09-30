@@ -193,12 +193,16 @@ namespace Gpu {
 namespace Cpu {
 	extern string box;
 	extern int x, y, width, height, min_width, min_height;
-	extern bool shown, redraw, got_sensors, cpu_temp_only, has_battery;
+	extern bool shown, redraw, got_sensors, cpu_temp_only, has_battery, has_smu, has_msr;
 	extern string cpuName, cpuHz;
 	extern float PPT, PPT_MAX;
+	extern FILE *fd_smu;
+	extern int fd_msr;
 	extern vector<string> available_fields;
 	extern vector<string> available_sensors;
 	extern tuple<int, float, long, string> current_bat;
+	extern std::chrono::high_resolution_clock::time_point msr_prev_time;
+	extern uint64_t prev_uj;
 
 	struct cpu_info {
 		std::unordered_map<string, deque<long long>> cpu_percent = {

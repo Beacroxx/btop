@@ -69,7 +69,11 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
   target_sources(btop PRIVATE src/netbsd/btop_collect.cpp)
 elseif(LINUX)
-  target_sources(btop PRIVATE src/linux/btop_collect.cpp)
+  target_sources(btop PRIVATE 
+    src/linux/btop_collect.cpp
+    src/linux/pm_tables.cpp
+    src/linux/libsmu.cpp
+    )
   if(BTOP_GPU)
     target_sources(btop PRIVATE
       src/linux/intel_gpu_top/intel_gpu_top.c

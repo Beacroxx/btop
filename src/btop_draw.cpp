@@ -531,6 +531,7 @@ namespace Cpu {
 		if (Runner::stopping) return "";
 		if (force_redraw) redraw = true;
 		bool show_temps = (Config::getB("check_temp") and got_sensors);
+    bool igpu_fake_temp = Config::getB("igpu_fake_temp");
 		auto single_graph = Config::getB("cpu_single_graph");
 		bool hide_cores = show_temps and (cpu_temp_only or not Config::getB("show_coretemp"));
 		const int extra_width = (hide_cores ? max(6, 6 * b_column_size) : 0);
@@ -813,21 +814,22 @@ namespace Cpu {
 		out += Theme::c("div_line") + Symbols::v_line;
 
 		// Same thing with PPT and PPT_MAX, just below the meter above
-		Draw::Meter pwr_meter = Draw::Meter{b_width - (show_temps ? 23 - 12 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cached"};
-		int PPT_PERC = PPT / PPT_MAX * 100;
-		PPT_PERC = clamp(PPT_PERC, 0, 100);
-		out += Mv::to(b_y + 2, b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR " + pwr_meter(PPT_PERC)
-			+ Theme::g("cached").at(PPT_PERC) +
-			fmt::format("{:>4.0f}", PPT) +
-			Theme::c("main_fg") + 'W';
-
-		} catch (const std::exception& e) { throw std::runtime_error("graphs, clock, meter : " + string{e.what()}); }
+		if (has_smu || has_msr) {
+        Draw::Meter pwr_meter = Draw::Meter{b_width - (show_temps ? 23 - 12 - (b_column_size <= 1 and b_columns == 1 ? 6 : 0) : 11), "cached"};
+      int PPT_PERC = PPT / PPT_MAX * 100;
+      PPT_PERC = clamp(PPT_PERC, 0, 100);
+      out += Mv::to(b_y + 2, b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR " + pwr_meter(PPT_PERC)
+        + Theme::g("cached").at(PPT_PERC) +
+        fmt::format("{:>4.0f}", PPT) +
+        Theme::c("main_fg") + 'W';
+      }
+    } catch (const std::exception& e) { throw std::runtime_error("graphs, clock, meter : " + string{e.what()}); }
 
 		//? Core text and graphs
 		int cx = 0, cy = 2, cc = 0, core_width = (b_column_size == 0 ? 2 : 3);
 		if (Shared::coreCount >= 100) core_width++;
 		for (const auto& n : iota(0, Shared::coreCount)) {
-			out += Mv::to(b_y + cy + 1, b_x + cx + 1) + Theme::c("main_fg") + (Shared::coreCount < 100 ? Fx::b + 'C' + Fx::ub : "")
+			out += Mv::to(b_y + cy + 1 - (has_smu || has_msr ? 0 : 1), b_x + cx + 1) + Theme::c("main_fg") + (Shared::coreCount < 100 ? Fx::b + 'C' + Fx::ub : "")
 				+ ljust(to_string(n), core_width);
 			if ((b_column_size > 0 or extra_width > 0) and cmp_less(n, core_graphs.size()))
 				out += Theme::c("inactive_fg") + graph_bg * (5 * b_column_size + extra_width) + Mv::l(5 * b_column_size + extra_width)
@@ -891,7 +893,7 @@ namespace Cpu {
 		if (show_gpu) {
 			for (unsigned long i = 0; i < gpus.size(); ++i) {
 				if (gpu_always or not v_contains(Gpu::shown_panels, i)) {
-					out += Mv::to(b_y + b_height - 3, b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR ";
+					out += Mv::to(b_y + b_height - 3 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "PWR ";
 					if (show_temps and gpus[i].supported_functions.temp_info and b_width < 34) {
 						const auto [temp, unit] = celsius_to(gpus[i].temp.back(), temp_scale);
 						if (temp < 100) out += " ";
@@ -904,7 +906,7 @@ namespace Cpu {
 					 	+ Theme::g("cached").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-pwr-totals"s).back(), 0ll, 100ll)) +
 					 	fmt::format("{:>4.0f}", gpus[i].pwr_usage / 1000.0) +
 					 	Theme::c("main_fg") + 'W';;
-					out += Mv::to(b_y + b_height - 2, b_x + 1) + Theme::c("main_fg") + Fx::b + "GPU ";
+					out += Mv::to(b_y + b_height - 2 - (has_smu || has_msr ? 0 : 0), b_x + 1) + Theme::c("main_fg") + Fx::b + "GPU ";
 					out += gpu_meter(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back())
 						+ Theme::g("cpu").at(clamp(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back(), 0ll, 100ll)) + rjust(to_string(safeVal(gpus[i].gpu_percent, "gpu-totals"s).back()), 4) + Theme::c("main_fg") + '%';
 					} else out += Mv::r(gpu_meter_width);
@@ -916,9 +918,18 @@ namespace Cpu {
 								+ gpu_temp_graphs[i](gpus[i].temp, data_same or redraw);
 						else out += Theme::g("temp").at(clamp(gpus[i].temp.back() * 100 / gpus[i].temp_max, 0ll, 100ll));
 						out += rjust(to_string(temp), 3 + (b_width >= 34 or temp > 99)) + Theme::c("main_fg") + unit;
-					}
-					out += Mv::to(b_y + b_height - 1, b_x + 2);
-					string name = Config::getS("custom_gpu_name0");
+					} else if (show_temps and igpu_fake_temp) {
+            const auto [temp, unit] = celsius_to(safeVal(cpu.temp, 0).back(), temp_scale);
+            const auto& temp_color = Theme::g("temp").at(clamp(safeVal(cpu.temp, 0).back() * 100 / cpu.temp_max, 0ll, 100ll));
+            if ((b_column_size > 1 or b_columns > 1) and temp_graphs.size() >= 1ll)
+              out += ' ' + Theme::c("inactive_fg") + graph_bg * 5 + Mv::l(5) + temp_color
+                + temp_graphs.at(0)(safeVal(cpu.temp, 0), data_same or redraw);
+			      out += rjust(to_string(temp), 4) + Theme::c("main_fg") + unit;
+          }
+
+					out += Mv::to(b_y + b_height - 1 - (has_smu || has_msr ? 0 : 0), b_x + 2);
+					auto custom = Config::getS("custom_gpu_name0");
+          string name = custom.empty() ? Gpu::gpu_names[i] : custom;
 					out += Theme::c("div_line") + Symbols::title_left_down + Theme::c("main_fg") + Fx::b + name + Theme::c("div_line") + Symbols::title_right_down;
 					int mhz = gpus[i].gpu_clock_speed;
 					float ghz = mhz / 1000.0f;
@@ -1039,7 +1050,7 @@ string draw(const gpu_info &gpu, unsigned long index, bool force_redraw,
                                   Config::getB("cpu_invert_lower"),
                                   true};
       }
-      gpu_meter = Draw::Meter{b_width - (show_temps ? 24 : 12), "cpu"};
+      gpu_meter = Draw::Meter{b_width - (show_temps ? 24 : 12) + (gpu.supported_functions.temp_info ? 0 : 1), "cpu"};
     }
     if (gpu.supported_functions.temp_info)
       temp_graph =
@@ -2501,13 +2512,12 @@ void calcSizes() {
     if (b_column_size == 0)
       b_width = (8 + 6 * show_temp) * b_columns + 1;
 #ifdef GPU_SUPPORT
-    // gpus_extra_height = max(0, gpus_extra_height - 1);
+    gpus_extra_height = max(0, gpus_extra_height - 1);
     b_height =
-        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 1) +
-                            gpus_extra_height);
+        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + gpus_extra_height + (Gpu::shown ? 0 : 2) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0));
 #else
     b_height =
-        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4);
+        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 - (has_smu || has_msr ? 0 : 1));
 #endif
 
     b_x = x + width - b_width - 1;

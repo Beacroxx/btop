@@ -533,6 +533,12 @@ namespace Menu {
 				"Horizontally mirror the GPU graph.",
 				"",
 				"True or False."},
+			{"igpu_fake_temp",
+				"Copy the CPU temperature to the iGPU",
+				"if the GPU has no temperature probe.",
+				"",
+				"True or False."
+			},
 			{"custom_gpu_name0",
 				"Custom gpu0 model name in gpu stats box.",
 				"",

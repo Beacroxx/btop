@@ -38,6 +38,12 @@ tab-size = 4
 #include "readinfo.hpp"
 #include "pm_tables.hpp"
 
+#define MSR_RAPL_POWER_UNIT 0x606
+#define MSR_PKG_ENERGY_STATUS 0x611
+#define MSR_PP1_ENERGY_STATUS 0x641
+#define MSR_DRAM_ENERGY_STATUS 0x619
+#define MSR_PKG_POWER_LIMIT 0x610
+
 #define pmta(elem) ((pmt->elem)?(*pmt->elem):NAN)
 #define pmta0(elem) ((pmt->elem)?(*pmt->elem):0)
 
@@ -361,18 +367,20 @@ namespace Shared {
 namespace Cpu {
 	string cpuName;
 	string cpuHz;
-	bool has_battery = true;
+	bool has_battery = true, has_smu = false, has_msr = false;
 	tuple<int, float, long, string> current_bat;
 
 	float PPT_MAX;
 	float PPT;
+	std::chrono::high_resolution_clock::time_point msr_prev_time;
+	uint64_t prev_uj;
+	FILE *fd_smu;
+	int fd_msr;
 	pm_table _pmt;
 	pm_table *pmt = &_pmt;
-	char *dumpfile= "/sys/kernel/ryzen_smu_drv/pm_table";
 	uint32_t bytes_read;
 	uint8_t readbuf[1024];
-	unsigned int version = 0x380804;
-	FILE *fd;
+	unsigned int version = 0x380804;;
 
 
 	const array time_names {
@@ -621,7 +629,17 @@ namespace Cpu {
 		}
 	}
 
+	uint64_t read_msr(off_t offset) {
+        uint64_t value;
+		if (pread(fd_msr, &value, sizeof value, offset) != sizeof value) {
+			perror("pread");
+			exit(1);
+		}
+		return (double)value;
+    }
+
 	string get_cpuHz() {
+
 		static int failed{};
 
 		if (failed > 4)
@@ -630,22 +648,41 @@ namespace Cpu {
 		string cpuhz;
 		try {
 
-			//? Get PPT Limit and PPT Value
-			fd = fopen(dumpfile, "rb");
-			if (!fd) {
-				fprintf(stderr, "Could not open %s\n", dumpfile);
-				exit(0);
-			}
-			bytes_read = fread(readbuf, sizeof(char), sizeof(readbuf), fd);
-			fclose(fd)	;
+			//? Get PPT Limit and PPT Value from smu
+			if (has_smu) {
+				bytes_read = fread(readbuf, sizeof(char), sizeof(readbuf), fd_smu);
 
-			if (!select_pm_table_version(version, &_pmt, readbuf)) {
-				fprintf(stderr, "Could not read %s\n", dumpfile);
-				exit(0);
+				if (!select_pm_table_version(version, &_pmt, readbuf)) {
+					fprintf(stderr, "Could not read /sys/kernel/ryzen_smu_drv/pm_table\n");
+					exit(0);
+				}
+
+				PPT_MAX = pmta(PPT_LIMIT);
+				PPT = pmta(PPT_VALUE);
 			}
 
-			PPT_MAX = pmta(PPT_LIMIT);
-			PPT = pmta(PPT_VALUE);
+			//? Get PPT Limit and PPT Value from msr
+			if (has_msr) {
+				uint64_t power_unit_value = read_msr(MSR_RAPL_POWER_UNIT);
+        		double power_unit = std::pow(0.5, power_unit_value & 0xf);
+
+				uint64_t power_limit_value = read_msr(MSR_PKG_POWER_LIMIT);
+				double pl1 = ((power_limit_value & 0x7FFF) * power_unit);
+        		double pl2 = (((power_limit_value >> 32) & 0x7FFF) * power_unit);
+
+				PPT_MAX = std::min(pl1, pl2);
+
+				// previous energy value = prev_uj, previous time = prev_msr_time
+				auto time = std::chrono::high_resolution_clock::now();
+				uint64_t energy_value = read_msr(MSR_PKG_ENERGY_STATUS);
+				double energy_diff = (energy_value - prev_uj) * power_unit / 1000.0;
+				double time_diff = std::chrono::duration<double>(time - msr_prev_time).count();
+				PPT = energy_diff / time_diff;
+
+				msr_prev_time = time;
+				prev_uj = energy_value;
+
+			}
 
 			double hz{};
 			//? Try to get freq from /sys/devices/system/cpu/cpufreq/policy first (faster)

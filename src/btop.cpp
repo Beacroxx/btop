@@ -55,6 +55,7 @@ tab-size = 4
 #include "config.h"
 #include "fmt/core.h"
 #include "fmt/ostream.h"
+#include <fcntl.h>
 
 using std::atomic;
 using std::cout;
@@ -321,6 +322,12 @@ void clean_quit(int sig) {
 			pthread_cancel(Runner::runner_id);
 		}
 	#else
+		if (Cpu::has_smu)
+			fclose(Cpu::fd_smu);
+
+		if (Cpu::has_msr)
+			close(Cpu::fd_msr);
+
 		struct timespec ts;
 		ts.tv_sec = 5;
 		if (pthread_timedjoin_np(Runner::runner_id, nullptr, &ts) != 0) {
@@ -1097,6 +1104,18 @@ int main(int argc, char **argv) {
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGUSR1);
 	pthread_sigmask(SIG_BLOCK, &mask, &Input::signal_mask);
+
+	//? Open smu dump
+	Cpu::fd_smu = fopen("/sys/kernel/ryzen_smu_drv/pm_table", "rb");
+	if (Cpu::fd_smu) {
+		Cpu::has_smu = true;
+	}
+
+	//? Open msr dump
+	Cpu::fd_msr = open("/dev/cpu/0/msr", O_RDONLY);
+	if (Cpu::fd_msr >= 0) {
+		Cpu::has_msr = true;
+	}
 
 	//? Start runner thread
 	Runner::thread_sem_init();
