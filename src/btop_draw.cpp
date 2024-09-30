@@ -829,7 +829,7 @@ namespace Cpu {
 		int cx = 0, cy = 2, cc = 0, core_width = (b_column_size == 0 ? 2 : 3);
 		if (Shared::coreCount >= 100) core_width++;
 		for (const auto& n : iota(0, Shared::coreCount)) {
-			out += Mv::to(b_y + cy + 1 - (has_smu || has_msr ? 0 : 1), b_x + cx + 1) + Theme::c("main_fg") + (Shared::coreCount < 100 ? Fx::b + 'C' + Fx::ub : "")
+			out += Mv::to(b_y + cy + 1 - (has_smu || has_msr ? 0 : 1), b_x + cx + 1) + Theme::c("main_fg") + (Shared::coreCount < 100 ? Fx::b + 'T' + Fx::ub : "")
 				+ ljust(to_string(n), core_width);
 			if ((b_column_size > 0 or extra_width > 0) and cmp_less(n, core_graphs.size()))
 				out += Theme::c("inactive_fg") + graph_bg * (5 * b_column_size + extra_width) + Mv::l(5 * b_column_size + extra_width)
