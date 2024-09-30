@@ -931,7 +931,7 @@ namespace Cpu {
                 out += rjust(to_string(temp), 4) + Theme::c("main_fg") + unit;
               }
 
-              out += Mv::to(b_y + b_height - 1 - (has_smu || has_msr ? 0 : 0) - (!gpus[i].supported_functions.pwr_usage), b_x + 2);
+              out += Mv::to(b_y + b_height - 1 - (has_smu || has_msr ? 0 : 0), b_x + 2);
               string custom = Config::getS(std::string("custom_gpu_name") +
                                  (char)(i + '0'));
               string name = custom.empty() ? Gpu::gpu_names[i] : custom;
