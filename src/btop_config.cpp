@@ -256,7 +256,7 @@ namespace Config {
 		{"custom_gpu_name4", ""},
 		{"custom_gpu_name5", ""},
 		{"show_gpu_info", "Auto"},
-		{"summary_gpu", ""}
+		{"summary_gpu", "gpu0"} // it will segfault if this doesnt exist LMAO
 	#endif
 	};
 	std::unordered_map<std::string_view, string> stringsTmp;
