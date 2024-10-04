@@ -1,0 +1,10 @@
+[Unit]
+Description=Set permissions for CPU MSR/Intel RAPL
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'chgrp msr /dev/cpu/0/msr && chmod g+r /dev/cpu/0/msr'
+
+[Install]
+WantedBy=multi-user.target

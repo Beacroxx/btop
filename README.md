@@ -8,11 +8,16 @@ You are required to:
 - Install and enable the `ryzen_smu-dkms` kernel module
 - Install and enable the [systemd service](systemd-unit/ryzen_smu-pmtable-perms.service)
 
-if you do not want to run btop with sudo on AMD systems.
+if you do not want to run btop as root on AMD systems.
 
-On intel, you can run `sudo make setcap` after `sudo make install` if you dont want to run btop as root.
+On intel You are required to:
+- Create the group `msr`
+- Add yourself to the `msr` group
+- Install and enable the [systemd service](systemd-unit/msr-perms.service)
 
-Use at your own risk.
+if you dont want to run btop as root.
+
+Use at your own risk. (It won't break your system but it could potentially crash/segfault randomly)
 #
 
 # ![btop++](Img/logo.png)
