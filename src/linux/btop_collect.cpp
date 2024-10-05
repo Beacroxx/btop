@@ -348,7 +348,6 @@ namespace Shared {
 		for (size_t i = 0; i < Gpu::gpus.size(); ++i) {
 			Gpu::summary_names.push_back("gpu" + std::to_string(i));
 		}
-		Gpu::summary_names.push_back("Off");
 
 			using namespace Gpu;
 			count = gpus.size();
@@ -358,9 +357,8 @@ namespace Shared {
 					   + gpus[i].supported_functions.pwr_usage
 					   + (gpus[i].supported_functions.mem_total or gpus[i].supported_functions.mem_used)
 						* (1 + 2*(gpus[i].supported_functions.mem_total and gpus[i].supported_functions.mem_used) + 2*gpus[i].supported_functions.mem_utilization);
-		} else {
-			Config::set("summary_gpu", "Off");
 		}
+		Gpu::summary_names.push_back("Off");
 	#endif
 
 		//? Init for namespace Mem
