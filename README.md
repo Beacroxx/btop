@@ -16,8 +16,11 @@ On intel You are required to:
 - Add yourself to the `msr` group
 - Log out and back in
 - Install and enable this [systemd service](systemd-unit/msr-perms.service)
+- run `sudo make setcap` after `sudo make install` (for iGPU support on Intel)
 
 if you dont want to run btop as root.
+
+i know that systemd services are a dumb way to do this but i cba.
 
 Use at your own risk. (It won't break your system but it could potentially crash/segfault randomly)
 #
