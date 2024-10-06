@@ -2527,7 +2527,7 @@ void calcSizes() {
           }
         }
     b_height =
-        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 2) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0)) - (Config::getS("summary_gpu") == "Off" ? 2 : 0) - (Gpu::summary_has_power ? 0 : 1);
+        min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 + (Gpu::shown ? 0 : 2 - (Gpu::summary_has_power ? 0 : 1)) - (has_smu || has_msr ? 0 : 1) - (Gpu::count == 0 ? 2 : 0)) - (Config::getS("summary_gpu") == "Off" ? 2 : 0);
 #else
     b_height =
         min(height - 2, (int)ceil((double)Shared::coreCount / b_columns) + 4 - (has_smu || has_msr ? 0 : 1));
